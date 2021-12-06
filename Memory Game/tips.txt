@@ -1,0 +1,10 @@
+things being taught in this particular thing:
+push()
+querySelector()
+setAttribute()
+getAttribute()
+createElement()
+appendChild()
+Math.random()
+sort()
+For loops
