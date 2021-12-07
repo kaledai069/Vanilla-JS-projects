@@ -39,66 +39,61 @@ document.addEventListener('DOMContentLoaded', ()=>
         },
     ]
 
-// DOM nodes
-const grid = document.querySelector('.grid');
+    cards_array.sort(()=> 0.5 - Math.random());
+    const grid = document.querySelector('.grid');
+    const result_display = document.querySelector('#result');
+    var score = parseInt(result_display.innerHTML);
 
-// Variables and helpers
-let card_pattern = [];
-
-// Helper Functions
-const rand_num_generator = () => Math.floor(Math.random() * cards_array.length);
-
-const create_board = ()=>
-{
-    for(let i = 0; i < cards_array.length; i++)
+    var cards_chosen = [];
+    var cards_chosen_id = [];
+    var cards_won = []
+    var cards;
+    const create_board = ()=>
     {
-        card_pattern.push(cards_array[rand_num_generator()]);
-        var card = document.createElement('img');
-        card.setAttribute('src', 'images/blank.png');
-        card.setAttribute('data-id', i);
-        card.classList.add('card');
-        grid.appendChild(card);
-    }   
-}
-
-const run_event_logic = ()=>
-{
-    document.querySelectorAll('.card').forEach( card =>
+        for(let i = 0; i < cards_array.length; i++)
         {
-            card.addEventListener('click', (e)=>
-            {
-                let card_id = card.getAttribute('data-id');
-                card.setAttribute('src', card_pattern[card_id].img);
-            })
-        })
-}
+            var card = document.createElement('img');
+            card.setAttribute('src', 'images/blank.png');
+            card.setAttribute('data-id', i);
+            card.addEventListener('click', flip_card)
+            grid.appendChild(card);
+        }   
+        cards = document.querySelectorAll('img');
+    }
 
-let card_index = 0;
-let card_show_running = true;
-const show_em_all = ()=>
-{
-    setInterval( () =>
-    {   
-        if(card_show_running)
+    const check_for_match = ()=>
+    {
+        const card_first = cards_chosen[0];
+        const card_second = cards_chosen[1];
+        console.log('CARD first: ', card_first);
+        console.log('CARD second: ', card_second);
+        if(card_first == card_second)
         {
-            all_cards[card_index].setAttribute('src', card_pattern[card_index].img);
-            card_index++;
-            if(card_index == card_pattern.length)
-            {
-                card_show_running = false;
-                card_index--;
-            }
+            cards[cards_chosen_id[0]].setAttribute('src', 'images/white.png');
+            cards[cards_chosen_id[1]].setAttribute('src', 'images/white.png');
+            result_display.innerHTML = ++score;
         }
         else
         {
-            all_cards[card_index].setAttribute('src', 'images/blank.png')
-            card_index--;
+            cards[cards_chosen_id[0]].setAttribute('src', 'images/blank.png');
+            cards[cards_chosen_id[1]].setAttribute('src', 'images/blank.png');
         }
-    }, 400)
-}
+        cards_chosen.splice(0, cards_chosen.length);
+        cards_chosen_id.splice(0, cards_chosen_id.length);
+    }
 
-create_board();
-const all_cards = document.querySelectorAll('.card');
-show_em_all();
-run_event_logic();
+    function flip_card()
+    {
+        var card_id = this.getAttribute('data-id');
+        cards_chosen.push(cards_array[card_id].name);
+        cards_chosen_id.push(card_id);
+        this.setAttribute('src', cards_array[card_id].img);
+        if(cards_chosen.length == 2)
+        {
+            setTimeout(check_for_match, 500);
+        }
+
+    }
+
+    create_board();
 })
