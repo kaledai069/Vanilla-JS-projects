@@ -18,23 +18,22 @@ document.addEventListener('DOMContentLoaded', ()=>
 
     const add_snake_block = ()=>
     {
-        if(JSON.stringify(snake_dir) == JSON.stringify([1,0]))
+        if(JSON.stringify(snake_body[snake_body.length - 1][1]) == JSON.stringify([1,0]))
         {
-            snake_body.push([snake_body[snake_body.length-1][0]-1, [1,0]]);
+            snake_body.push([snake_body[snake_body.length-1][0], [1,0]]);
         }
-        else if(JSON.stringify(snake_dir) == JSON.stringify([0, 1]))
+        else if(JSON.stringify(snake_body[snake_body.length - 1][1]) == JSON.stringify([0, 1]))
         {
-            snake_body.push([snake_body[snake_body.length-1][0]+10, [0,1]]);
+            snake_body.push([snake_body[snake_body.length-1][0], [0,1]]);
         }
-        else if(JSON.stringify(snake_dir) == JSON.stringify([-1, 0]))
+        else if(JSON.stringify(snake_body[snake_body.length - 1][1]) == JSON.stringify([-1, 0]))
         {
-            snake_body.push([snake_body[snake_body.length-1][0]+1, [-1, 0]]);
+            snake_body.push([snake_body[snake_body.length-1][0], [-1, 0]]);
         }
-        else if(JSON.stringify(snake_dir) == JSON.stringify([0, -1]))
+        else if(JSON.stringify(snake_body[snake_body.length - 1][1]) == JSON.stringify([0, -1]))
         {
-            snake_body.push([snake_body[snake_body.length-1][0]-10, [0, -1]]);
+            snake_body.push([snake_body[snake_body.length-1][0], [0, -1]]);
         }
-        console.log(snake_body);
     }
 
     const fruit_catch = ()=>
@@ -54,64 +53,81 @@ document.addEventListener('DOMContentLoaded', ()=>
         }
     }
 
-    const remove_snake_shade = ()=>
+    const remove_snake_shade = (snake_block_index) =>
     {
-        snake_body.forEach(snake_pos => {
-            squares[snake_pos[0]].classList.remove('snake');
-        });
+        squares[snake_block_index].classList.remove('snake');
     }
 
-    const append_snake_shade = ()=>
+    const append_snake_shade = (snake_block_index)=>
     {
-        snake_body.forEach(snake_pos =>
-            {
-                squares[snake_pos[0]].classList.add('snake');
-            })
+        squares[snake_block_index].classList.add('snake');
     }
 
-    const snake_movement_key_logger = ( movement_style )=>
+    const snake_movement_key_logger = ( snake_block_index, movement_style )=>
     {
+        
         switch(movement_style)
         {
             case 'left':
-                remove_snake_shade();
-                fruit_catch();
-                for(let i = 0; i < snake_body.length; i++)
+                remove_snake_shade(snake_body[snake_block_index][0]);
+                if(snake_block_index == 0)
                 {
-                    snake_body[i][0] % 10 == 0 ? snake_body[i][0] += 9 : snake_body[i][0]--;
+                    fruit_catch();
                 }
-                append_snake_shade();
+                snake_body[snake_block_index][0]%10 == 0? snake_body[snake_block_index][0] += 9 : snake_body[snake_block_index][0]--;
+                append_snake_shade(snake_body[snake_block_index][0]);
                 break;
 
             case 'right':
-                remove_snake_shade();
-                fruit_catch();
-                for(let i = 0; i < snake_body.length; i++)
+                remove_snake_shade(snake_body[snake_block_index][0]);
+                if(snake_block_index == 0)
                 {
-                    snake_body[i][0] % 10 == 9 ? snake_body[i][0] -= 9 : snake_body[i][0]++;
+                    fruit_catch();
                 }
-                append_snake_shade();
+                snake_body[snake_block_index][0] % 10 == 9 ? snake_body[snake_block_index][0] -= 9 : snake_body[snake_block_index][0]++;
+                append_snake_shade(snake_body[snake_block_index][0]);
                 break;
 
             case 'up':
-                remove_snake_shade();
-                fruit_catch();
-                for(let i = 0; i < snake_body.length; i++)
+                remove_snake_shade(snake_body[snake_block_index][0]);
+                if(snake_block_index == 0)
                 {
-                    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].some(item => item == snake_body[i][0]) ? snake_body[i][0] += 90 : snake_body[i][0] -=10;
+                    fruit_catch();
                 }
-                append_snake_shade();
+                [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].some(item => item == snake_body[snake_block_index][0]) ? snake_body[snake_block_index][0] += 90 : snake_body[snake_block_index][0] -=10;
+                append_snake_shade(snake_body[snake_block_index][0]);
                 break;
 
             case 'down':
-                remove_snake_shade();
-                fruit_catch();
-                for(let i = 0; i < snake_body.length; i++)
+                remove_snake_shade(snake_body[snake_block_index][0]);
+                if(snake_block_index == 0)
                 {
-                    [90, 91, 92, 93, 94, 95, 96, 97, 98, 99].some(item => item == snake_body[i][0]) ? snake_body[i][0] -= 90 : snake_body[i][0] +=10;
+                    fruit_catch();
                 }
-                append_snake_shade();
+                [90, 91, 92, 93, 94, 95, 96, 97, 98, 99].some(item => item == snake_body[snake_block_index][0]) ? snake_body[snake_block_index][0] -= 90 : snake_body[snake_block_index][0] +=10;
+                append_snake_shade(snake_body[snake_block_index][0]);
                 break;
+        }
+    }
+
+    const check_for_direction = ()=>
+    {
+        let del_dir = false;
+        if(dir_locs.length > 0)
+        {
+            for(let i = 0; i < dir_locs.length; i++)
+            {
+                for(let j = 0; j < snake_body.length; j++)
+                {
+                    if(snake_body[j][0] == dir_locs[i][0])
+                    {
+                        snake_body[j][1] = dir_locs[i][1];
+                        if(j == snake_body.length-1) del_dir = true;
+                    }
+                }
+            }
+            if(del_dir) dir_locs.shift();
+            
         }
     }
 
@@ -121,41 +137,68 @@ document.addEventListener('DOMContentLoaded', ()=>
         {
             case 'a':
                 snake_dir = [-1, 0];
-                dir_change = true;
+                dir_locs.push([snake_body[0][0], snake_dir]);
                 break;
             case 'd':
                 snake_dir = [1, 0];
-                dir_change = true;
+                dir_locs.push([snake_body[0][0], snake_dir]);
                 break;
             case 'w':
                 snake_dir = [0, 1];
-                dir_change = true;
+                dir_locs.push([snake_body[0][0], snake_dir]);
                 break;
             case 's':
                 snake_dir = [0, -1];
-                dir_change = true;
+                dir_locs.push([snake_body[0][0], snake_dir]);
+                break;
+        }
+    })
+
+    document.addEventListener('swiped', (e)=>
+    {
+        switch(e.detail.dir)
+        {
+            case 'left':
+                snake_dir = [-1, 0];
+                dir_locs.push([snake_body[0][0], snake_dir]);
+                break;
+            case 'right':
+                snake_dir = [1, 0];
+                dir_locs.push([snake_body[0][0], snake_dir]);
+                break;
+            case 'up':
+                snake_dir = [0, 1];
+                dir_locs.push([snake_body[0][0], snake_dir]);
+                break;
+            case 'down':
+                snake_dir = [0, -1];
+                dir_locs.push([snake_body[0][0], snake_dir]);
                 break;
         }
     })
 
     const snake_move = () =>
     {
-        if(JSON.stringify(snake_dir) == JSON.stringify([1,0]))
+        check_for_direction();
+        for(let i = 0, len = snake_body.length; i < len; i++)
         {
-            snake_movement_key_logger('right');
-        }
-        else if(JSON.stringify(snake_dir) == JSON.stringify([0, 1]))
-        {
-            snake_movement_key_logger('up');
-        }
-        else if(JSON.stringify(snake_dir) == JSON.stringify([-1, 0]))
-        {
-            snake_movement_key_logger('left');
-        }
-        else if(JSON.stringify(snake_dir) == JSON.stringify([0, -1]))
-        {
-            snake_movement_key_logger('down');
-        }
+            if(JSON.stringify(snake_body[i][1]) == JSON.stringify([1,0]))
+            {
+                snake_movement_key_logger(i, 'right');
+            }
+            else if(JSON.stringify(snake_body[i][1]) == JSON.stringify([0, 1]))
+            {
+                snake_movement_key_logger(i, 'up');
+            }
+            else if(JSON.stringify(snake_body[i][1]) == JSON.stringify([-1, 0]))
+            {
+                snake_movement_key_logger(i, 'left');
+            }
+            else if(JSON.stringify(snake_body[i][1]) == JSON.stringify([0, -1]))
+            {
+                snake_movement_key_logger(i, 'down');
+            }
+        } 
     }
 
     const random_apple_generator = ()=>
@@ -172,6 +215,6 @@ document.addEventListener('DOMContentLoaded', ()=>
         }
     }
 
-    setInterval(function(){snake_move()}, 400);
+    setInterval(function(){snake_move()}, 100);
     setInterval(function(){random_apple_generator()}, 500)
 })
