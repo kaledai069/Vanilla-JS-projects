@@ -2,6 +2,8 @@ document.addEventListener('DOMContentLoaded', ()=>
 {
     "use strict"
     const all_squares = document.querySelectorAll(".grid div");
+    const wrapper_body = document.getElementById('wrapper')
+    const score_card = document.querySelector('#score');
 
     // shapes representation
     const tetris_shapes = 
@@ -144,23 +146,45 @@ document.addEventListener('DOMContentLoaded', ()=>
     let rand_tetris_obj;
     let present_selected_obj;
     let ran_active_shape;
+    let score = 0;
+    var game_timer;
+
+    function check_game_over()
+    {
+        for(let i = 0; i < 10; i++)
+        {
+            if(all_squares[i].classList.contains('taken'))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 
     function initializers()
     {
-        rand_tetris_obj = Math.floor(Math.random()*tetris_shapes.length);
-        present_selected_obj = tetris_shapes[rand_tetris_obj];
-        ran_active_shape = Math.floor(Math.random() * present_selected_obj['structure'].length)
-        active_shape = present_selected_obj['structure'][ran_active_shape].map(x => x.slice());
-        active_shape_bool_copy = active_shape.map(x => x.slice());
-        active_shape_color = present_selected_obj['color'];
-        let random_start_pos = Math.floor(Math.random() * (11 - active_shape[0].length));
-        actual_start_pos = random_start_pos;
-        if(active_shape.length > 1)
+        if(check_game_over())
         {
-            actual_start_pos = random_start_pos - 10 * (active_shape.length - 1);
+            clearInterval(game_timer);
+            score_card.innerHTML = `GAME OVER!!! TOTAL SCORE: ${score}`;
         }
-        mask_resolver(actual_start_pos);
-        mask_mapper(active_shape_color, true);
+        else
+        {
+            rand_tetris_obj = Math.floor(Math.random()*tetris_shapes.length);
+            present_selected_obj = tetris_shapes[rand_tetris_obj];
+            ran_active_shape = Math.floor(Math.random() * present_selected_obj['structure'].length)
+            active_shape = present_selected_obj['structure'][ran_active_shape].map(x => x.slice());
+            active_shape_bool_copy = active_shape.map(x => x.slice());
+            active_shape_color = present_selected_obj['color'];
+            let random_start_pos = Math.floor(Math.random() * (11 - active_shape[0].length));
+            actual_start_pos = random_start_pos;
+            if(active_shape.length > 1)
+            {
+                actual_start_pos = random_start_pos - 10 * (active_shape.length - 1);
+            }
+            mask_resolver(actual_start_pos);
+            mask_mapper(active_shape_color, true);
+        }
     }
 
     initializers();
@@ -177,14 +201,7 @@ document.addEventListener('DOMContentLoaded', ()=>
                 last_row_pos = last_row[i];
             }
         }
-        if((last_row_pos+10) >= 200)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        return (last_row_pos + 10) >= 200 ? true : false;
     }
 
     function edge_boundary_checker()
@@ -208,7 +225,7 @@ document.addEventListener('DOMContentLoaded', ()=>
 
     function clear_n_shift_block(start_value, row_value)
     {
-        // clear all the block
+        // clear the match row block
         for(let i = start_value; i < start_value + 10; i++)
         {
             all_squares[i].classList.remove('taken');
@@ -217,22 +234,23 @@ document.addEventListener('DOMContentLoaded', ()=>
             color_list.forEach( color => {
                 if(all_squares[i].classList.contains(color))
                     all_squares[i].classList.remove(color)
-            });
+            });        
+            score += 5;
         }
+        score_card.innerHTML = `SCORE: ${score}`;
 
         start_value -= 10;
-        // shift the blocks
         for(let i = row_value - 1; i >= 0; i--)
         {
             for(let j = start_value; j < start_value + 10; j++)
             {
                 if(all_squares[j].classList.contains('taken'))
                 {
-                    let color = all_squares[j].classList[1];
-                    console.log(color);
                     all_squares[j].classList.remove('taken');
+                    let color = all_squares[j].classList[1];
                     all_squares[j].classList.remove(color);
-                    all_squares[j+10].classList.add('taken', color);
+                    all_squares[j+10].classList.add(color);
+                    all_squares[j+10].classList.add('taken');
                 }
             }
             start_value -= 10;
@@ -245,7 +263,7 @@ document.addEventListener('DOMContentLoaded', ()=>
         let starting_value = 190;
         let block_count = 0;
 
-        for(let i = 19; i >= 0; i--)
+        for(let i = 19; i >= 0 && starting_value >= 0; i--)
         {
             for(let j = starting_value; j < starting_value + 10; j++)
             {
@@ -407,8 +425,29 @@ document.addEventListener('DOMContentLoaded', ()=>
         }
     })
 
-    setInterval(()=>
+    wrapper_body.addEventListener('swiped', (e) =>
+    {
+        switch(e.detail.dir)
+        {
+            case 'left':
+                if(left_movement_possible())
+                    re_mapper(-1);                
+                break;
+            case 'right':
+                if(right_movement_possible())
+                    re_mapper(1);   
+                break;
+            case 'up':
+                rotate_shape();
+                break;
+            case 'down':
+                all_the_way_down();
+                break;
+        }
+    })
+
+   game_timer = setInterval(()=>
     {
         re_mapper(10);
-    }, 300)
+    }, 400)
 })
